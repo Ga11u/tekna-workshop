@@ -2,7 +2,7 @@
 In this tutorial you will learn:
 1. How to set up a single Cassandra instance
 2. How to define tables in Cassandra
-3. How to query data in Cassadra
+3. How to query data in Cassandra
 4. How to set up a cluster of Cassandra nodes
 ## Requirements
 - Docker (https://docs.docker.com/get-docker)
@@ -17,7 +17,7 @@ cd cassandra-single
 ## Step 2: Define a single Cassandra node
 Create a docker-compose file `docker-compose.yml` where you will define the docker container for one single instance of Cassandra.
 
-The `docker-compose.yml` should look like this (you can use any text editor like `vi`, `nano` and `WordPad` or GUI to write the compose file). You can find an example in [docker-compose-single.yml](docker-compose-sngle.yml) or do `cp docker-compose-single.yml docker-compose.yml`:
+The `docker-compose.yml` should look like this (you can use any text editor like `vi`, `nano` and `WordPad` or GUI to write the compose file). You can find an example in [docker-compose-single.yml](docker-compose-single.yml) or do `cp docker-compose-single.yml docker-compose.yml`:
 ```yml
 version: '3'
 
