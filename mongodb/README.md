@@ -32,9 +32,6 @@ services:
       - tutorial
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
 ```
 Save the file and close the editor.
 
@@ -118,9 +115,6 @@ services:
       - tutorial
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
 
   mongo_express:
     image: mongo-express
@@ -130,8 +124,6 @@ services:
       - target: 8081
         published: 8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_SERVER: mongodb
     command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express"
     depends_on:
