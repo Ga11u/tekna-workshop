@@ -1,0 +1,33 @@
+version: '3'
+
+networks:
+  tutorial:
+    name: tutorial
+
+services:
+  cassandra:
+    image: cassandra:latest
+    networks:
+        - tutorial
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_BROADCAST_ADDRESS: cassandra
+      CASSANDRA_LISTEN_ADDRESS: cassandra
+      LOCAL_JMX: "no"
+
+  cassandra_web:
+    image: basraven/cassandra-web
+    networks:
+      - tutorial
+    ports:
+      - target: 3000
+        published: 8000
+    environment:
+      CASSANDRA_HOST: cassandra
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
+    depends_on:
+      - cassandra
+    restart: unless-stopped

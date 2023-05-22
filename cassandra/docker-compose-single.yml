@@ -1,0 +1,13 @@
+version: '3'
+
+networks:
+  tutorial:
+    name: tutorial
+
+services:
+  cassandra:
+    image: cassandra:latest
+    networks:
+      - tutorial
+    ports:
+      - "9042:9042"
