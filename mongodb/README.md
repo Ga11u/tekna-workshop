@@ -290,7 +290,8 @@ rs.status()
 ```
 
 You should get something like:
-```json
+```sh
+...
 members: [
     {
       _id: 0,
@@ -333,7 +334,8 @@ members: [
       configVersion: 1
     }
   ],
-  ok: 1,
+  ok: 1
+...
 ```
 
 ## Step 7: Playground
