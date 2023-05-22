@@ -5,9 +5,9 @@ networks:
     name: tutorial
 
 services:
-  mongodb:
+  cassandra:
+    image: cassandra:latest
     networks:
       - tutorial
-    image: mongo:latest
     ports:
-      - "27017:27017"
+      - "9042:9042"

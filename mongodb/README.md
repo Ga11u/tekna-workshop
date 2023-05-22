@@ -1,21 +1,21 @@
-# Apache Cassandra Hands-on
+# MongoDB Hands-on
 In this tutorial you will learn:
-1. How to set up a single Cassandra instance
-2. How to define tables in Cassandra
-3. How to query data in Cassandra
-4. How to set up a cluster of Cassandra nodes
+1. How to set up a single MongoDB instance
+2. How to handle data in MongoDB
+3. How to query data in MongoDB
+4. How to set up a cluster of MongoDB nodes
 ## Requirements
 - Docker (https://docs.docker.com/get-docker)
 
 ## Step 1: Create a directory or clone the project
-Create a directory named cassandra and enter the directory (this will be your working directory). If you have cloned this git repository, you can skip this step.
+Create a directory named mongodb and enter the directory (this will be your working directory). If you have cloned this git repository, you can skip this step.
 ```sh
-mkdir cassandra
-cd cassandra
+mkdir mongodb
+cd mongodb
 ```
 
-## Step 2: Define a single Cassandra node
-Create a docker-compose file `docker-compose.yml` where you will define the docker container for one single instance of Cassandra.
+## Step 2: Define a single MongoDB node
+Create a docker-compose file `docker-compose.yml` where you will define the docker container for one single instance of MongoDB.
 
 The `docker-compose.yml` should look like this (you can use any text editor like `vi`, `nano` and `WordPad` or GUI to write the compose file). You can find an example in [docker-compose-single.yml](docker-compose-single.yml) or do `cp docker-compose-single.yml docker-compose.yml` (if you have cloned the git repo):
 ```yml
@@ -26,12 +26,12 @@ networks:
     name: tutorial
 
 services:
-  cassandra:
-    image: cassandra:latest
+  mongodb:
+    image: mongo:latest
     networks:
       - tutorial
     ports:
-      - "9042:9042"
+      - "27017:27017"
 ```
 Save the file and close the editor.
 
