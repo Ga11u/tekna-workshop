@@ -89,7 +89,7 @@ cqlsh>
 You can type `exit` to leave.
 
 ## Step 5: Cassandra is running but we want to see the DB
-You will stop Cassandra and extend the docker compose to add a new service to visualise Cassandra
+You can stop Cassandra and extend the docker compose to add a new service to visualise Cassandra.
 
 To stop the cluster using Docker
 ```sh
