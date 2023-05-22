@@ -8,7 +8,7 @@ In this tutorial you will learn:
 - Docker (https://docs.docker.com/get-docker)
 
 ## Step 1: Create a directory or clone the project
-Create a directory named Cassandra-single and enter the directory (this will be our working directory by now).
+Create a directory named Cassandra-single and enter the directory (this will be our working directory by now). This is an optional step if you have cloned the git repository.
 ```sh
 mkdir cassandra-single
 cd cassandra-single
@@ -17,7 +17,7 @@ cd cassandra-single
 ## Step 2: Define a single Cassandra node
 Create a docker-compose file `docker-compose.yml` where you will define the docker container for one single instance of Cassandra.
 
-The `docker-compose.yml` should look like this (you can use any text editor like `vi`, `nano` and `WordPad` or GUI to write the compose file). You can find an example in [docker-compose-single.yml](docker-compose-single.yml) or do `cp docker-compose-single.yml docker-compose.yml`:
+The `docker-compose.yml` should look like this (you can use any text editor like `vi`, `nano` and `WordPad` or GUI to write the compose file). You can find an example in [docker-compose-single.yml](docker-compose-single.yml) or do `cp docker-compose-single.yml docker-compose.yml` (if you have cloned the git repo):
 ```yml
 version: '3'
 
@@ -35,6 +35,7 @@ services:
 ```
 Save the file and close the editor.
 
+You have created a docker-compose file where you have defined one containerised service of Cassandra, using the last Cassandra image from DockerHub. The container has the port 9042 opened and mapped to the internal port 9024 of Cassandra. It is also connected to a network called *tutorial* . You will later use the network to connect more services together.
 
 ## Step 3: Let's run Cassandra
 To run the cluster using Docker (using `-d` to detach the container from the terminal). The docker compose file must be named `docker-compose.yml`
@@ -42,14 +43,10 @@ To run the cluster using Docker (using `-d` to detach the container from the ter
 docker compose up -d
 ```
 
-Let's check if we can connect by opening an interactive query shell:
+From DockerDesktop you can see if the Container is running:
+![One Cassandra instance running](one_instance_dockerdesktop.png "One Cassandra instance running")
 
-```docker
-docker run --rm -it --network tutorial nuvo/docker-cqlsh cqlsh cassandra 9042 --cqlversion='3.4.6' 
-```
-You can type `exit` to leave.
-
-To check that Cassandra is running
+Another alternative is to use the terminal. To check the running projects in docker, you can use the following. It lists the project and the number of containers, in this case, it will show only 1 container.
 ```sh
 docker compose ls
 ```
@@ -61,7 +58,7 @@ NAME                STATUS              CONFIG FILES
 cassandra           running(1)          D:\teckna\big-data-workshop\cassandra\docker-compose.yml
 ```
 
-To check the configuration of your container running Cassandra :
+To list the containers and see more information such as their state:
 
 ```sh
 docker compose ps
@@ -71,9 +68,27 @@ You should see something like:
 ```
 NAME                    COMMAND                  SERVICE             STATUS              PORTS
 cassandra-cassandra-1   "docker-entrypoint.s…"   cassandra           running             7000-7001/tcp, 7199/tcp, 9160/tcp, 0.0.0.0:9042->9042/tcp
-````
+```
 
-## Step 4: Cassandra is running but we want to see the DB
+## Step 4: Check connection to Cassandra
+Let's check if we can connect by opening an interactive query shell (you may need to wait until Cassandra finishes the set-up and starts accepting connections):
+
+```docker
+docker run --rm -it --network tutorial nuvo/docker-cqlsh cqlsh cassandra 9042 --cqlversion='3.4.6' 
+```
+
+If the connection succed, it will show:
+
+```
+Connected to Test Cluster at cassandra:9042.
+[cqlsh 5.0.1 | Cassandra 4.1.1 | CQL spec 3.4.6 | Native protocol v5]
+Use HELP for help.
+cqlsh>
+```
+
+You can type `exit` to leave.
+
+## Step 5: Cassandra is running but we want to see the DB
 You will stop Cassandra and extend the docker compose to add a new service to visualise Cassandra
 
 To stop the cluster using Docker
@@ -81,7 +96,7 @@ To stop the cluster using Docker
 docker compose down
 ```
 
-Let's add a new service for visualising Cassandra as in [docker-compose-gui.yml](docker-compose-gui.yml)
+Let's add a new service for visualising Cassandra as in [docker-compose-gui.yml](docker-compose-gui.yml) or do `cp docker-compose-gui.yml docker-compose.yml`.
 
 ```yml
 version: '3'

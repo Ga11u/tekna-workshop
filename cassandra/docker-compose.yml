@@ -5,43 +5,9 @@ networks:
     name: tutorial
 
 services:
-  cassandra1:
+  cassandra:
     image: cassandra:latest
-    networks:
-        - tutorial
-    ports:
-      - "9042:9042"
-    environment:
-      CASSANDRA_CLUSTER_NAME: cassandra-cluster
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_PASSWORD_SEEDER: "yes"
-      LOCAL_JMX: "no"
-  
-  cassandra2:
-    image: cassandra:latest
-    networks:
-        - tutorial
-    ports:
-      - target: 9042
-        published: 9043
-    environment:
-      CASSANDRA_CLUSTER_NAME: cassandra-cluster
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_SEEDS: cassandra1 
-      LOCAL_JMX: "no"
-
-  cassandra_web:
-    image: basraven/cassandra-web
     networks:
       - tutorial
     ports:
-      - target: 3000
-        published: 8000
-    environment:
-      CASSANDRA_HOST: cassandra1
-      CASSANDRA_USER: cassandra
-      CASSANDRA_PASSWORD: cassandra
-    depends_on:
-      - cassandra1
-      - cassandra2
-    restart: unless-stopped
+      - "9042:9042"
