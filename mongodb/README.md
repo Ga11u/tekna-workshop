@@ -141,7 +141,7 @@ You should see something like this:
 
 ## Step 5: Load some data and query
 
-This step can be done either from a command line or using the UI at http://localhost:8081 .
+This step can be done either from a command line or using the web UI at http://localhost:8081 .
 
 In the web UI, you can click on *Create Database* (top-right corner).
 
