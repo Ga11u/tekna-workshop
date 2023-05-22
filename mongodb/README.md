@@ -291,7 +291,6 @@ rs.status()
 
 You should get something like:
 ```json
-...
 members: [
     {
       _id: 0,
@@ -335,7 +334,6 @@ members: [
     }
   ],
   ok: 1,
-...
 ```
 
 ## Step 7: Playground
