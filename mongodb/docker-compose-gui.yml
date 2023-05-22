@@ -5,29 +5,22 @@ networks:
     name: tutorial
 
 services:
-  cassandra:
-    image: cassandra:latest
-    networks:
-        - tutorial
-    ports:
-      - "9042:9042"
-    environment:
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_BROADCAST_ADDRESS: cassandra
-      CASSANDRA_LISTEN_ADDRESS: cassandra
-      LOCAL_JMX: "no"
-
-  cassandra_web:
-    image: basraven/cassandra-web
+  mongodb:
+    image: mongo:4.2.24-bionic
     networks:
       - tutorial
     ports:
-      - target: 3000
-        published: 8000
+      - "27017:27017"
+
+  mongo_express:
+    image: mongo-express
+    networks:
+      - tutorial
+    ports:
+      - target: 8081
+        published: 8081
     environment:
-      CASSANDRA_HOST: cassandra
-      CASSANDRA_USER: cassandra
-      CASSANDRA_PASSWORD: cassandra
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express"
     depends_on:
-      - cassandra
-    restart: unless-stopped
+      - mongodb
