@@ -91,12 +91,12 @@ You can type `exit` to leave.
 ## Step 5: Cassandra is running but we want to see the DB
 You can stop Cassandra and extend the docker compose to add a new service to visualise Cassandra.
 
-To stop the cluster using Docker
+To stop and remove the containers you can use:
 ```sh
 docker compose down
 ```
 
-Let's add a new service for visualising Cassandra as in [docker-compose-gui.yml](docker-compose-gui.yml) or do `cp docker-compose-gui.yml docker-compose.yml`.
+Let's add a new service for visualising Cassandra as in [docker-compose-gui.yml](docker-compose-gui.yml) or do `cp docker-compose-gui.yml docker-compose.yml`. Once you have the new docker-compose file, you can run it with `docker compose up -d`. If you have not removed the containers, you will observe that docker recreates the Cassandra instance. 
 
 ```yml
 version: '3'
@@ -139,9 +139,17 @@ Now you can open the browser and see your Cassandra instance (this can take arou
 >http://localhost:8000
 
 
+You should see something like this:
+
+![Cassandra Web one instance](cassandra_web_one_instance.png "Cassandra Web one instance")
+
 ## Step 5: Load some data and query
 
 This step can be done either from a command line or using the UI at http://localhost:8000 .
+
+In the web UI, you can click on Execute (top-right corner).
+
+![Web Execute](web_execute.png "Web execute")
 
 From the command line. First we need to run the CQL shell: 
 
@@ -151,7 +159,7 @@ docker run --rm -it --network tutorial nuvo/docker-cqlsh cqlsh cassandra 9042 --
 
 Cassandra uses keyspaces to organise the data store. Similar to namespaces in other databases. By executing the folling sentence, you can create a keyspace named `store`. This keystore has replication factor 1, meaning that there will be a single copy of the data in our database. Higher replication factor will create more copies of the data, this is particularly interesting for replicating data in a cluster.
 
-```sql
+```cql
 CREATE KEYSPACE IF NOT EXISTS store WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
 ```
 
@@ -167,7 +175,7 @@ classDiagram
 ``` 
 To create this class, you can execture the following sentence:
 
-```sql
+```cql
 CREATE TABLE IF NOT EXISTS store.shopping_cart (
 userid text PRIMARY KEY,
 item_count int,
@@ -176,14 +184,29 @@ last_update_timestamp timestamp
 ```
 To add some transactions, you can use the following sentence:
 
-```sql
+```cql
 INSERT INTO store.shopping_cart (userid, item_count, last_update_timestamp) VALUES ('9876', 2, toTimeStamp(now()));
 INSERT INTO store.shopping_cart (userid, item_count, last_update_timestamp) VALUES ('1234', 5, toTimeStamp(now()));
 ```
 You can visualise these rows by executing:
-```sql
+```cql
 SELECT * FROM store.shopping_cart;
 ```
+
+This should return:
+
+```cql
+ userid | item_count | last_update_timestamp
+--------+------------+---------------------------------
+   1234 |          5 | 2023-05-22 16:53:56.336000+0000
+   9876 |          2 | 2023-05-22 16:53:48.808000+0000
+
+(2 rows)
+```
+
+On the web UI, you can also visualise the rows.
+![Web Rows](web_rows.png "Web Rows")
+
 
 ## (Optional) Step 6: Create a cluster
 **Creating a cluster of two or more nodes requires a lot of resources, it may not run on your computer.**
@@ -246,6 +269,8 @@ Now you can open the browser and see your Cassandra instance. This time you will
 
 >http://localhost:8000
 
+You should now see:
+![Cassandra Web two instances](cassandra_web_two_instance.png "Cassandra Web two instances")
 
 ## Step 8: Playground
 ## Trobleshooting
