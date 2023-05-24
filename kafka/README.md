@@ -121,7 +121,7 @@ You can type `Ctrl+C` to leave.
 ## (Optional) Step 6: Create a cluster
 **Creating a cluster of two or more nodes requires a lot of resources, it may not run on your computer.**
 
-For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo):
+For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo) or You can find an example in [docker-compose-cluster.yml](docker-compose-cluster.yml):
 
 ```yml
 version: '3'
@@ -196,6 +196,148 @@ docker exec -it kafka-kafka2-1 /bin/kafka-console-consumer --topic test  --boots
 
 
 ## Step 7: Playground
+
+### Using Python with Kafka
+To use the Python library we need to have librdkafka wheel installed. Some instructions on how to install it: https://github.com/confluentinc/librdkafka
+
+For Windows users, installing librdkafka may be challeging, thefore, you can use devcontainers in VSC.
+
+Hence, for the rest of this part we are going to use VSC and developer containers. The Devcontainer will not only make it easier to install librdkafka, but also similate the connection to Kafka from outside.
+
+You need to make sure that you have the VSC extension Dev Containers installed: https://code.visualstudio.com/docs/devcontainers/tutorial#_install-the-extension
+
+Once you have installed the extension, open the Command Palete of VSC (press F1) and type `Dev Containers: Open Folder in Container...` and then open the kafka folder. 
+
+Once the devcontainer initialise, you need to install the python library `confluent-kafka` (from the terminal of VSC. If it does not show, in the top of the GUI, click the `...` and select Terminal > New Terminal)
+```sh
+pip install confluent-kafka
+```
+Let's produce some topics:
+
+```sh
+python producer.py kafka:19092 test
+```
+
+Finish the code with CTRL+C or CMD+C and consume the messages:
+
+```sh
+python consumer.py kafka:19092 group-test test
+```
+
+In the kafka directory you will find the `consumer.py` and `producer.py` to explore the code.
+
+
+### Using Kafka REST
+Kafka rest image is larger than 1.7GB, so it may not work on your computer. In case you want yo experiment, you can use the following docker-compose. You can find an example in [docker-compose-rest.yml](docker-compose-rest.yml) or do `cp docker-compose-rest.yml docker-compose.yml` (if you have cloned the git repo):
+
+```yml
+version: '3'
+
+networks:
+  tutorial:
+    name: tutorial
+
+services:
+  zookeeper:
+    image: zookeeper
+    networks:
+      - tutorial
+    ports:
+      - target: 2181
+        published: 2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+
+  kafka:
+    image: confluentinc/cp-kafka
+    depends_on:
+      - zookeeper
+    networks:
+      - tutorial
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest
+    depends_on:
+      - kafka
+    networks:
+      - tutorial
+    ports:
+      - 8082:8082
+    environment:
+      KAFKA_REST_HOST_NAME: rest-proxy
+      KAFKA_REST_BOOTSTRAP_SERVERS: 'kafka:19092'
+      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+```
+
+Wait until the service is up and accepting requests. Then, you will be able to interact. To create a topic, you can send your first message.
+
+```sh
+curl -X POST \
+     -H "Content-Type: application/vnd.kafka.json.v2+json" \
+     -H "Accept: application/vnd.kafka.v2+json" \
+     --data '{"records":[{"key":"jsmith","value":"alarm clock"},{"key":"htanaka","value":"batteries"},{"key":"awalther","value":"bookshelves"}]}' \
+     "http://localhost:8082/topics/purchases"
+```
+
+The response should be similar to:
+
+```sh
+{"offsets":[{"partition":0,"offset":0,"error_code":null,"error":null},{"partition":0,"offset":1,"error_code":null,"error":null},{"partition":0,"offset":2,"error_code":null,"error":null}],"key_schema_id":null,"value_schema_id":null}  
+```
+
+To consume the messages, you need to create a consumer:
+
+```sh
+curl -X POST \
+     -H "Content-Type: application/vnd.kafka.v2+json" \
+     --data '{"name": "ci1", "format": "json", "auto.offset.reset": "earliest"}' \
+     http://localhost:8082/consumers/cg1
+```
+
+Then, you need to subscrive the consumer to the topic:
+
+```sh
+curl -X POST \
+     -H "Content-Type: application/vnd.kafka.v2+json" \
+     --data '{"topics":["purchases"]}' \
+     http://localhost:8082/consumers/cg1/instances/ci1/subscription 
+```
+
+To start consuming the data you need to execute the following (you only execute it twice on the first time):
+
+```sh
+curl -X GET \
+     -H "Accept: application/vnd.kafka.json.v2+json" \
+     http://localhost:8082/consumers/cg1/instances/ci1/records 
+
+sleep 10
+
+curl -X GET \
+     -H "Accept: application/vnd.kafka.json.v2+json" \
+     http://localhost:8082/consumers/cg1/instances/ci1/records 
+```
+
+Finaly, when you finish consuming messages, remever to close the consumer:
+
+```sh
+curl -X DELETE \
+     -H "Content-Type: application/vnd.kafka.v2+json" \
+     http://localhost:8082/consumers/cg1/instances/ci1 
+```
 
 ## Trobleshooting
 ### Checking the logs

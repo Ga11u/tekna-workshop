@@ -38,12 +38,12 @@ Save the file and close the editor.
 You have created a docker-compose file where you have defined one containerised service of Cassandra, using the last Cassandra image from DockerHub. The container has the port 9042 opened and mapped to the internal port 9024 of Cassandra. It is also connected to a network called *tutorial* . You will later use the network to connect more services together.
 
 ## Step 3: Let's run Cassandra
-To run the cluster using Docker (using `-d` to detach the container from the terminal). The docker compose file must be named `docker-compose.yml`
+To run the Cassandra instance using Docker (using `-d` to detach the container from the terminal). The docker compose file must be named `docker-compose.yml`
 ```sh
 docker compose up -d
 ```
 
-From DockerDesktop you can see if the Container is running:
+From DockerDesktop you can see if the container is running:
 ![One Cassandra instance running](one_instance_dockerdesktop.png "One Cassandra instance running")
 
 Another alternative is to use the terminal. To check the running projects in docker, you can use the following. It lists the project and the number of containers, in this case, it will show only 1 container.
@@ -210,6 +210,8 @@ On the web UI, you can also visualise the rows.
 
 ## (Optional) Step 6: Create a cluster
 **Creating a cluster of two or more nodes requires a lot of resources, it may not run on your computer.**
+
+For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo):
 
 ```yml
 version: '3'
