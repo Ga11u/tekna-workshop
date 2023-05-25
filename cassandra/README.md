@@ -170,7 +170,7 @@ classDiagram
     class shopping_cart{
       +text userid
       +int item_count
-      +timestamp last_update_timestamp
+      +timestamp last_update
     }
 ``` 
 To create this class, you can execture the following sentence:
@@ -179,14 +179,14 @@ To create this class, you can execture the following sentence:
 CREATE TABLE IF NOT EXISTS store.shopping_cart (
 userid text PRIMARY KEY,
 item_count int,
-last_update_timestamp timestamp
+last_update timestamp
 );
 ```
 To add some transactions, you can use the following sentence:
 
 ```cql
-INSERT INTO store.shopping_cart (userid, item_count, last_update_timestamp) VALUES ('9876', 2, toTimeStamp(now()));
-INSERT INTO store.shopping_cart (userid, item_count, last_update_timestamp) VALUES ('1234', 5, toTimeStamp(now()));
+INSERT INTO store.shopping_cart (userid, item_count, last_update) VALUES ('9876', 2, toTimeStamp(now()));
+INSERT INTO store.shopping_cart (userid, item_count, last_update) VALUES ('1234', 5, toTimeStamp(now()));
 ```
 You can visualise these rows by executing:
 ```cql
@@ -196,7 +196,7 @@ SELECT * FROM store.shopping_cart;
 This should return:
 
 ```cql
- userid | item_count | last_update_timestamp
+ userid | item_count | last_update
 --------+------------+---------------------------------
    1234 |          5 | 2023-05-22 16:53:56.336000+0000
    9876 |          2 | 2023-05-22 16:53:48.808000+0000
@@ -275,6 +275,21 @@ You should now see:
 ![Cassandra Web two instances](cassandra_web_two_instance.png "Cassandra Web two instances")
 
 ## Step 8: Playground
+We are going to start by install the Python library `cassandra-driver`.
+```sh
+pip install cassandra-driver
+```
+
+Then we can deploy the cassandra as in [docker-compose-gui.yml](docker-compose-gui.yml) or do `cp docker-compose-gui.yml docker-compose.yml`. 
+
+
+After that, you can try the python code and play with it.
+```sh
+python tutorial.py
+```
+
+
+
 ## Trobleshooting
 ### Checking the logs
 To check the logs of a container an see what is happending or the errors use:
@@ -294,4 +309,4 @@ This resources can help you to expand your knowledge of Cassandra:
 - https://cassandra.apache.org/doc/latest/
 
 Other things to watch: ScyllaDB. ScyllaDB is an interesting alternative to Apache Cassandra written in C++. It rewrote Apache Cassandra in C++, making it "fully" compatible.
-- https://www.scylladb.com/)
+- https://www.scylladb.com/
