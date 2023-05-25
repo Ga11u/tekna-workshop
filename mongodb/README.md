@@ -331,6 +331,69 @@ members: [
 ```
 
 ## Step 7: Playground
+### Load a dataset into MongoDB
+You are going to load a dataset of restaurants to play with. The dataset is in the git repo if you have not clone it.
+
+To load data, MongoDB uses the mongoimport tool which already installed in the docker image. To be able to connect our directory with the `restaurants.json` we need to mount our directory into into the docker container. On the docker container, our directory will be inside the ``/tutorial`. You can find the docker-compose in [docker-compose-playground.yml](docker-compose-gui.yml) or do `cp docker-compose-playground.yml docker-compose.yml`.
+
+```yml
+version: '3'
+
+networks:
+  tutorial:
+    name: tutorial
+
+services:
+  mongodb:
+    image: mongo:4.2.24-bionic
+    networks:
+      - tutorial
+    ports:
+      - "27017:27017"
+    volumes:
+      - .:/tutorial
+
+  mongo_express:
+    image: mongo-express
+    networks:
+      - tutorial
+    ports:
+      - target: 8081
+        published: 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express"
+    depends_on:
+      - mongodb
+```
+
+The you can lunch the docker containers:
+
+```sh
+docker compose up -d
+```
+
+Once your container is running, you can run the dollowing:
+
+```sh
+docker exec -it mongodb-mongodb-1 mongoimport --db='restaurants_reviews' --collection='restaurants' --file='/tutorial/restaurants.json'
+```
+
+This will load the file resutant files. On the web UI you will find the database named `restaurants_reviews` and a collection called `restaurants`. 
+
+
+
+Let's explore the data with Python and `pymongo` library.
+First you need to install `pymongo`.
+
+```sh
+pip install pymongo
+```
+
+Then run the code
+```sh
+python tutorial.py
+```
 
 ## Trobleshooting
 ### Checking the logs
