@@ -14,7 +14,7 @@ services:
         published: 2181
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ALLOW_ANONYMOUS_LOGIN: "yes" # This allows to connect Zookeeper without authentification
 
   kafka:
     image: confluentinc/cp-kafka
@@ -23,15 +23,15 @@ services:
     networks:
       - tutorial
     ports:
-      - "9092:9092"
-      - "19092:19092"
+      - "9092:9092" # The ports to connect from your laptop
+      - "19092:19092" # The ports used to connect within the docker network 'tutorial' we defined previously
     environment:
-      KAFKA_BROKER_ID: 1
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092
+      KAFKA_BROKER_ID: 1 # The ID of the node
+      ALLOW_PLAINTEXT_LISTENER: "yes" 
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT # The security protocol used, in this case PLAINTEXT does not provide security
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092 # The addresses from where Kafka will listen to new communications, in this case, 0.0.0.0 means everywhere
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092 # The published address for receiving connections
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # the Zookeeper address, instead of an IP address we use the container name 'zookeeper' as Docker will handle the name resolution for us
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' # By setting this to true we don't need to create topics, these are created with the first message sent to a topic that does not exist.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

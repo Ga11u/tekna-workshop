@@ -25,6 +25,8 @@ import sys
 if __name__ == '__main__':
     if len(sys.argv) != 3:
         sys.stderr.write('Usage: %s <bootstrap-brokers> <topic>\n' % sys.argv[0])
+        # Usage example using the devcontainer: python producer.py kafka:19092 test
+        # Usage example from your own laptop: python producer.py localhost:9092 test
         sys.exit(1)
 
     broker = sys.argv[1]
@@ -51,6 +53,7 @@ if __name__ == '__main__':
     for line in sys.stdin:
         try:
             # Produce line (without newline)
+            # In this case every message will have the KEY: 'test-key'
             p.produce(topic, line.rstrip(),key="test-key", callback=delivery_callback)
 
         except BufferError:

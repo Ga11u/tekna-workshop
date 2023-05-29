@@ -53,7 +53,7 @@ if __name__ == '__main__':
     # See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
     conf = {'bootstrap.servers': broker, 'group.id': group, 'session.timeout.ms': 6000,
             'auto.offset.reset': 'earliest', 'enable.auto.offset.store': False}
-
+    # 'auto.offset.reset' indicates whether the consumer starts reading from the beginning of the log or waits for a new message to start.
     # Check to see if -T option exists
     for opt in optlist:
         if opt[0] != '-T':
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                 raise KafkaException(msg.error())
             else:
                 # Proper message
-                sys.stderr.write('%% %s [%d] at offset %d with key %s:\n' %
+                sys.stderr.write('%% %s at partition [%d] at offset %d with key %s:\n' %
                                  (msg.topic(), msg.partition(), msg.offset(),
                                   str(msg.key())))
                 print(msg.value())

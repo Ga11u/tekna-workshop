@@ -16,7 +16,7 @@ cd kafka
 ## Step 2: Define a single Kafka node
 Create a docker-compose file `docker-compose.yml` where you will define the docker container for one single instance of Kafka.
 
-Apacha Kafka depends on Zookeeper to manage the running jobs.
+Apache Kafka depends on Zookeeper to manage the running jobs.
 
 The `docker-compose.yml` should look like this (you can use any text editor like `vi`, `nano` and `WordPad` or GUI to write the compose file). You can find an example in [docker-compose-single.yml](docker-compose-single.yml) or do `cp docker-compose-single.yml docker-compose.yml` (if you have cloned the git repo):
 ```yml
@@ -36,26 +36,26 @@ services:
         published: 2181
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ALLOW_ANONYMOUS_LOGIN: "yes" # This allows to connect Zookeeper without authentification
 
-  kafka1:
+  kafka:
     image: confluentinc/cp-kafka
     depends_on:
       - zookeeper
     networks:
       - tutorial
     ports:
-      - "9092:9092"
-      - "19092:19092"
+      - "9092:9092" # The ports to connect from your laptop
+      - "19092:19092" # The ports used to connect within the docker network 'tutorial' we defined previously
     environment:
-      KAFKA_BROKER_ID: 1
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka1:19092
+      KAFKA_BROKER_ID: 1 # The ID of the node
+      ALLOW_PLAINTEXT_LISTENER: "yes" 
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT # The security protocol used, in this case PLAINTEXT does not provide security
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092 # The addresses from where Kafka will listen to new communications, in this case, 0.0.0.0 means everywhere
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092 # The published address for receiving connections
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # the Zookeeper address, instead of an IP address we use the container name 'zookeeper' as Docker will handle the name resolution for us
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' # By setting this to true we don't need to create topics, these are created with the first message sent to a topic that does not exist.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 ```
 Save the file and close the editor.
@@ -97,13 +97,13 @@ kafka-zookeeper-1   zookeeper               "/docker-entrypoint.…"   zookeeper
 ```
 
 ## Step 4: Check connection to Kafka
-Let's check if we can connect by opening an interactive shell (you may need to wait until Kafka finishes the set-up and starts accepting connections):
+Let's check if we can connect by opening an interactive shell (you may need to wait until Kafka finishes the setup and starts accepting connections):
 
 First, to create a topic:
 ```docker
-docker exec -it kafka-kafka-1 /bin/kafka-topics --create --replication-factor 1 --partitions 1 --topic test --bootstrap-server kafka:19092
+docker exec -it kafka-kafka-1 /bin/kafka-topics --create --replication-factor 1 --partitions 3 --topic test --bootstrap-server kafka:19092
 ```
-Then, you will need to open two terminals, one for producing messages and other for consuming.
+Then, you will need to open two terminals, one for producing messages and the other for consuming.
 
 To produce messages:
 ```docker
@@ -121,26 +121,26 @@ You can type `Ctrl+C` to leave.
 ## (Optional) Step 6: Create a cluster
 **Creating a cluster of two or more nodes requires a lot of resources, it may not run on your computer.**
 
-For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo) or You can find an example in [docker-compose-cluster.yml](docker-compose-cluster.yml):
+For this, you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo) or You can find an example in [docker-compose-cluster.yml](docker-compose-cluster.yml):
 
 ```yml
 version: '3'
 
-networks:
+networks: # The network is used to connect the different docker containers
   tutorial:
     name: tutorial
 
 services:
-  zookeeper:
+  zookeeper: 
     image: zookeeper
     networks:
       - tutorial
-    ports:
+    ports: 
       - target: 2181
         published: 2181
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ALLOW_ANONYMOUS_LOGIN: "yes" # This allows to connect Zookeeper without authentification
 
   kafka1:
     image: confluentinc/cp-kafka
@@ -149,17 +149,17 @@ services:
     networks:
       - tutorial
     ports:
-      - "9092:9092"
-      - "19092:19092"
+      - "9092:9092" # The ports to connect from your laptop
+      - "19092:19092" # The ports used to connect within the docker network 'tutorial' we defined previously
     environment:
-      KAFKA_BROKER_ID: 1
+      KAFKA_BROKER_ID: 1 # The ID of the node
       ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka1:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT # The security protocol used, in this case PLAINTEXT does not provide security
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092 # The addresses from where Kafka will listen to new communications, in this case, 0.0.0.0 means everywhere
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka1:19092 # The published address for receiving connections
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # the Zookeeper address, instead of an IP address we use the container name 'zookeeper' as Docker will handle the name resolution for us
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' # By setting this to true we don't need to create topics, these are created with the first message sent to a topic that does not exist.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   kafka2:
@@ -170,7 +170,7 @@ services:
     networks:
       - tutorial
     ports:
-      - "9292:9292"
+      - "9292:9292" # The ports need to be different than the ones used in the other nodes
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 2
@@ -198,17 +198,17 @@ docker exec -it kafka-kafka2-1 /bin/kafka-console-consumer --topic test  --boots
 ## Step 7: Playground
 
 ### Using Python with Kafka
-To use the Python library we need to have librdkafka wheel installed. Some instructions on how to install it: https://github.com/confluentinc/librdkafka
+To use the Python library we need to have the librdkafka wheel installed. Some instructions on how to install it: https://github.com/confluentinc/librdkafka
 
-For Windows users, installing librdkafka may be challeging, thefore, you can use devcontainers in VSC.
+For Windows users, installing librdkafka may be challenging, therefore, you can use devcontainers in VSC.
 
-Hence, for the rest of this part we are going to use VSC and developer containers. The Devcontainer will not only make it easier to install librdkafka, but also similate the connection to Kafka from outside.
+Hence, for the rest of this part, we are going to use VSC and developer containers. The Devcontainer will not only make it easier to install librdkafka, but also simulate the connection to Kafka from outside.
 
 You need to make sure that you have the VSC extension Dev Containers installed: https://code.visualstudio.com/docs/devcontainers/tutorial#_install-the-extension
 
 Once you have installed the extension, open the Command Palete of VSC (press F1) and type `Dev Containers: Open Folder in Container...` and then open the kafka folder. 
 
-Once the devcontainer initialise, you need to install the python library `confluent-kafka` (from the terminal of VSC. If it does not show, in the top of the GUI, click the `...` and select Terminal > New Terminal)
+Once the devcontainer initialise, you need to install the python library `confluent-kafka` (from the terminal of VSC. If it does not show, at the top of the GUI, click the `...` and select Terminal > New Terminal)
 ```sh
 pip install confluent-kafka
 ```
@@ -217,14 +217,22 @@ Let's produce some topics:
 ```sh
 python producer.py kafka:19092 test
 ```
+(for MacOS and Linux users) or if you are not using the devcontainer:
+```sh
+python producer.py localhost:9092 test
+```
 
-Finish the code with CTRL+C or CMD+C and consume the messages:
+Finish the execution with CTRL+C or CMD+C and consume the messages:
 
 ```sh
 python consumer.py kafka:19092 group-test test
 ```
+(for MacOS and Linux users) or if you are not using the devcontainer:
+```sh
+python producer.py localhost:9092 group-test test
+```
 
-In the kafka directory you will find the `consumer.py` and `producer.py` to explore the code.
+In the kafka directory, you will find the `consumer.py` and `producer.py` to explore the code.
 
 
 ### Using Kafka REST
@@ -233,7 +241,7 @@ Kafka rest image is larger than 1.7GB, so it may not work on your computer. In c
 ```yml
 version: '3'
 
-networks:
+networks: # The network is used to connect the different docker containers
   tutorial:
     name: tutorial
 
@@ -247,7 +255,7 @@ services:
         published: 2181
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      ALLOW_ANONYMOUS_LOGIN: "yes"
+      ALLOW_ANONYMOUS_LOGIN: "yes" # This allows to connect Zookeeper without authentification
 
   kafka:
     image: confluentinc/cp-kafka
@@ -256,20 +264,20 @@ services:
     networks:
       - tutorial
     ports:
-      - "9092:9092"
-      - "19092:19092"
+      - "9092:9092" # The ports to connect from your laptop
+      - "19092:19092" # The ports used to connect within the docker network 'tutorial' we defined previously
     environment:
-      KAFKA_BROKER_ID: 1
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092
+      KAFKA_BROKER_ID: 1 # The ID of the node
+      ALLOW_PLAINTEXT_LISTENER: "yes" 
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT # The security protocol used, in this case PLAINTEXT does not provide security
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:19092,HOST://0.0.0.0:9092 # The addresses from where Kafka will listen to new communications, in this case, 0.0.0.0 means everywhere
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,INTERNAL://kafka:19092 # The published address for receiving connections
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # the Zookeeper address, instead of an IP address we use the container name 'zookeeper' as Docker will handle the name resolution for us
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' # By setting this to true we don't need to create topics, these are created with the first message sent to a topic that does not exist.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  rest-proxy:
+  rest-proxy: # This is a REST service that can be used to connect to Kafka. More info at: https://docs.confluent.io/platform/current/kafka-rest/quickstart.html
     image: confluentinc/cp-kafka-rest
     depends_on:
       - kafka
@@ -308,7 +316,7 @@ curl -X POST \
      http://localhost:8082/consumers/cg1
 ```
 
-Then, you need to subscrive the consumer to the topic:
+Then, you need to subscribe the consumer to the topic:
 
 ```sh
 curl -X POST \
@@ -317,7 +325,7 @@ curl -X POST \
      http://localhost:8082/consumers/cg1/instances/ci1/subscription 
 ```
 
-To start consuming the data you need to execute the following (you only execute it twice on the first time):
+To start consuming the data you need to execute the following (you only execute it twice the first time):
 
 ```sh
 curl -X GET \
@@ -331,7 +339,7 @@ curl -X GET \
      http://localhost:8082/consumers/cg1/instances/ci1/records 
 ```
 
-Finaly, when you finish consuming messages, remever to close the consumer:
+Finally, when you finish consuming messages, remove to close the consumer:
 
 ```sh
 curl -X DELETE \
@@ -341,17 +349,17 @@ curl -X DELETE \
 
 ## Trobleshooting
 ### Checking the logs
-To check the logs of a container an see what is happending or the errors use:
+To check the logs of a container and see what is happening or the errors use:
 ```sh
 docker compose logs <container-name>
 ```
 
 ### Default docker IP address
-In windows you can check the address of your docker engine by opening Docker Desktop and going to settings. There go to Resources > Network
+In the Docker Desktop, you can check the address of your docker engine by opening Docker Desktop and going to settings. There go to Resources > Network
 
 ## Addition resources
-This resources can help you to expand your knowledge on Apache Kafka:
+These resources can help you to expand your knowledge of Apache Kafka:
 - https://kafka.apache.org/documentation.html
 
-An sql-like database build on top of Apache Kafka:
+An sql-like database built on top of Apache Kafka:
 - KsqlDB: https://ksqldb.io/
