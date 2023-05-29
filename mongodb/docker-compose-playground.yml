@@ -12,7 +12,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - .:/tutorial
+      - .:/tutorial # This will give access the docker container to the current directory in order to access the restaurants.json file
 
   mongo_express:
     image: mongo-express

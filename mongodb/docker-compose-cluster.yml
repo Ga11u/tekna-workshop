@@ -12,7 +12,7 @@ services:
     ports:
       - target: 27017
         published: 27017
-    command: mongod --replSet cluster
+    command: mongod --replSet cluster # The MongoDB starts as a replica set, forming a cluster with the name 'cluster'
 
   mongodb2:
     image: mongo:4.2.24-bionic
@@ -20,7 +20,7 @@ services:
       - tutorial
     ports:
       - target: 27017
-        published: 27018
+        published: 27018 # A different port to avoid port conflicts with the other MongoDB instance
     command: mongod --replSet cluster
     depends_on:
       - mongodb1

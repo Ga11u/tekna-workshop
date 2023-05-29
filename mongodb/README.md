@@ -46,7 +46,7 @@ docker compose up -d
 From DockerDesktop you can see if the container is running:
 ![One MongoDB instance running](one_instance_dockerdesktop.png "One MongoDB instance running")
 
-Another alternative is to use the terminal. To check the running projects in docker, you can use the following. It lists the project and the number of containers, in this case, it will show only 1 container.
+Another alternative is to use the terminal. To check the running projects in docker, you can use the following command. It lists the project and the number of containers (in this case, it will show only 1 container).
 ```sh
 docker compose ls
 ```
@@ -71,7 +71,7 @@ mongodb-mongodb-1   mongo:4.2.24-bionic   "docker-entrypoint.s…"   mongodb    
 ```
 
 ## Step 4: Check connection to MongoDB
-Let's check if we can connect by opening an interactive shell (you may need to wait until MongoDB finishes the set-up and starts accepting connections):
+Let's check if we can connect by opening an interactive shell (you may need to wait until MongoDB finishes the setup and starts accepting connections):
 
 ```docker
 docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongodb:27017
@@ -106,7 +106,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # The docker network to connect the different containers
 
 services:
   mongodb:
@@ -114,7 +114,7 @@ services:
     networks:
       - tutorial
     ports:
-      - "27017:27017"
+      - "27017:27017" # The port to access MongoDB
 
   mongo_express:
     image: mongo-express
@@ -124,8 +124,8 @@ services:
       - target: 8081
         published: 8081
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
-    command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express"
+      ME_CONFIG_MONGODB_SERVER: mongodb # The address of the mongodb server. Docker enginer will resolve the name to the IP address.
+    command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express" # We wait 60 seconds to start as the MongoDB needs time to start
     depends_on:
       - mongodb
 ```
@@ -145,19 +145,19 @@ This step can be done either from a command line or using the web UI at http://l
 
 In the web UI, you can click on *Create Database* (top-right corner).
 
-From the command line. First we need to run the Mongo shell: 
+From the command line. First, we need to run the Mongo shell: 
 
 ```docker
 docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongodb:27017
 ```
 
-MongoDB uses collections to organise the databases. Similar to namespaces in other databases. By executing the folling sentence, you can create a new database named `store`. This database can contain collections, which are analogous to tables.
+MongoDB uses collections to organise the databases. Similar to namespaces in other databases. By executing the following sentence, you can create a new database named `store`. This database can contain collections, which are analogous to tables.
 
 ```mongo
 use store
 ```
 
-MongoDB is a schema-free database, thefore you do not need to define the data structure. In this case, to instantiate the shopping cart class, you only need to create an instance in a collection named `shopping_cart` (if the collections does not exist, MongoDB will create it):
+MongoDB is a schema-free database, therefore you do not need to define the data structure. In this case, to instantiate the shopping cart class, you only need to create an instance in a collection named `shopping_cart` (if the collection does not exist, MongoDB will create it):
 
 ```mermaid
 classDiagram
@@ -167,7 +167,7 @@ classDiagram
       +timestamp last_update_timestamp
     }
 ``` 
-To create an instance of the class, you can use:
+To create one document following the class, you can use:
 
 ```sh
 db.shopping_cart.insertOne({ userid: "9876", item_count: 2, last_update_timestamp: Date() })
@@ -184,11 +184,7 @@ To add many documents you can do, where instead of a single document, you can sp
 db.shopping_cart.insertMany([{ userid: "6655", item_count: 16, last_update_timestamp: Date() }, { userid: "hd54", item_count: 58, last_update_timestamp: Date() }])
 ```
 
-You can also do it one the web UI by using the option create document:
-On the web UI, you can also visualise the rows.
-![Web Execute](web_execute.png "Web Execute")
-
-To visualise the created documents, you can execute:
+To visualise the created documents, you can execute in the shell:
 ```sh
 db.shopping_cart.find({})
 ```
@@ -212,33 +208,37 @@ This should return:
 ]
 ```
 
+You can also do the same on the web UI by using the option 'New document' document.
+
+![Web Execute](web_execute.png "Web Execute")
+
 On the web UI, you can also visualise the rows.
 ![Web Rows](web_rows.png "Web Rows")
 
 
 ### Different keys on the same collection
 
-As the schema of mongo collections is flecible, documents can also be created with new keys. In this case you create a new document with the key 'name'. Note that the key _id is not new as it is always created by MongoDB to index the documents, even when you do not especify it:
+As the schema of the MongoDB collections is flexible, documents can also be created with new keys. In this case, you create a new document with the key 'name'. Note that the key _id is not new as it is always created by MongoDB to index the documents, even when you do not specify it:
 
 ```sh
 db.shopping_cart.insterOne({ _id: ObjectId("6474f575644"), userid: "6655", item_count: 16, last_update_timestamp: Date(), name: "Max" })
 ```
 
-What would happend if you try to retrive a document that does not have a key?
+*What would happen if you try to retrieve a document that does not have a key?*
 
 First, you can create a new document:
 ```sh
 db.shopping_cart.insterOne({ _id: ObjectId("90ds6bsdb9fdd7"), userid: "6655", item_count: 16, last_update_timestamp: Date() })
 ```
 
-The you can try to retrive it:
+Then, you can try to retrieve it:
 ```sh
 db.shopping_cart.find({ _id : ObjectId("90ds6bsdb9fdd7")},{_id:0,name:1})
 ```
 
 It will return a list with an empty document: `[ {} ]`
 
-Something similar would happend if you retrieve all documents and project only the key 'name'.
+Something similar would happen if you retrieve all documents and project only the key 'name'.
 
 ```sh
 db.shopping_cart.find({},{_id:0,name:1})
@@ -246,7 +246,7 @@ db.shopping_cart.find({},{_id:0,name:1})
 
 This will return a list of documents with empty documents and some with the key 'name',  something like `[ {}, { name: 'Max' }, {}, {} ]`
 
->In both case, you must be careful, as this can propagate errors. For example, in Python, if the returned document is handled as an empty dictionary, you will get an error if you try to access the key 'name' or any other key that does not exist in the empty document.
+>In both cases, you must be careful, as this can propagate errors. For example, in Python, if the returned document is handled as an empty dictionary, you will get an error if you try to access the key 'name' or any other key that does not exist in the empty document.
 
 To find the keys of your collection, you can do:
 
@@ -261,7 +261,7 @@ db.shopping_cart.aggregate([ {"$project":{"arrayofkeyvalue":{"$objectToArray":"$
 MongoDB has two replication modalities: mirrors of replicas and sharding. 
 
 ### Cluster of mirror replicas
-Now we are going to setup a cluster of mirrors of replicas, where each replica has the same data as the others (like a mirror).
+Now we are going to set up a cluster of mirrors of replicas, where each replica has the same data as the others (like a mirror).
 
 For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo):
 
@@ -280,7 +280,7 @@ services:
     ports:
       - target: 27017
         published: 27017
-    command: mongod --replSet cluster
+    command: mongod --replSet cluster # The MongoDB starts as a replica set, forming a cluster with the name 'cluster'
 
   mongodb2:
     image: mongo:4.2.24-bionic
@@ -288,7 +288,7 @@ services:
       - tutorial
     ports:
       - target: 27017
-        published: 27018
+        published: 27018 # A different port to avoid port conflicts with the other MongoDB instance
     command: mongod --replSet cluster
     depends_on:
       - mongodb1
@@ -379,15 +379,15 @@ members: [
 ...
 ```
 
-### Distributed shared cluster
-Instead of setting up replicas that are mirrors, we can distribute the data across nodes. For this, we need a more complex setup: at least one instance as router, one as configuration, and two or more nodes to store data. The different type of instances can be horisontaly scaled too.
+Distributed sharded cluster
+Instead of setting up replicas that are mirrors, we can distribute the data across nodes. For this, we need a more complex setup: at least one instance as a router, one as a configuration server, and two or more nodes to store data. The different types of instances can be horizontally scaled too.
 
 ![Sharded Cluster from https://www.mongodb.com/docs/manual/sharding/](sharded-cluster-architecture.svg "Sharded Cluster from https://www.mongodb.com/docs/manual/sharding/")
 
-Data is stored in shards and the shards are distributed according to some keys in each collection. The election of the keys for sharding is important as this can effect the perfomance but also determine how balanced will be the distribution.
+Data is stored in shards and the shards are distributed according to some keys in each collection. The election of the keys for sharding is important as this can affect the performance but also determine how balanced will be the distribution.
 
 
-To setup the shared claster, you can use the following docker-compose or do `cp docker-compose-sharded.yml docker-compose.yml` (if you have cloned the git repo) or find it here [docker-compose-sharded.yml](docker-compose-sharded.yml):
+To set up the sharded cluster, you can use the following docker-compose or do `cp docker-compose-sharded.yml docker-compose.yml` (if you have cloned the git repo) or find it here [docker-compose-sharded.yml](docker-compose-sharded.yml):
 
 ```yml
 version: '3'
@@ -443,12 +443,12 @@ services:
 
 Once the cluster is up and running, you need to configure it.
 
-1. Configure the Config server. For this you will use the mongosh:
+1. Configure the Config server. For this, you will use the mongosh:
 
 ```sh
 docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongocf:27017
 ```
-Inside the mongosh, you need to initialisate the cluster of Config Servers. In this case with only one instance:
+Inside the mongosh, you need to initialise the cluster of Config Servers. In this case with only one instance:
 
 ```sh
 rs.initiate({_id: "clustercf",configsvr: true, members: [{ _id : 0, host : "mongocf:27017" }]})
@@ -473,7 +473,7 @@ docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongos:
 sh.addShard("clustershard/mongodb1")
 sh.status()
 ```
-4. Without leaving the shell, you can now create a shared database and collection. 
+4. Without leaving the shell, you can now create a sharded database and collection. 
 
 ```sh
 sh.enableSharding("testDB")
@@ -482,13 +482,13 @@ sh.status()
 ```
 Exit the shell with `exit`.
 
-Any new database and collection needs to be created as shared if you want to distributed it.
+Any new database and collection need to be created as sharded if you want to distribute it.
 
 ## Step 7: Playground
 ### Load a dataset into MongoDB
-You are going to load a dataset of restaurants to play with. The dataset is in the git repo if you have not clone it.
+You are going to load a dataset of restaurants to play with. The dataset is in the git repo if you have not cloned it.
 
-To load data, MongoDB uses the mongoimport tool which already installed in the docker image. To be able to connect our directory with the `restaurants.json` we need to mount our directory into into the docker container. On the docker container, our directory will be inside the ``/tutorial`. You can find the docker-compose in [docker-compose-playground.yml](docker-compose-gui.yml) or do `cp docker-compose-playground.yml docker-compose.yml`.
+To load data, MongoDB uses the mongoimport tool which is already installed in the docker image. To be able to connect our directory with the `restaurants.json` we need to mount our directory into the docker container. On the docker container, our directory will be inside the ``/tutorial`. You can find the docker-compose in [docker-compose-playground.yml](docker-compose-gui.yml) or do `cp docker-compose-playground.yml docker-compose.yml`.
 
 ```yml
 version: '3'
@@ -505,7 +505,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - .:/tutorial
+      - .:/tutorial # This will give access the docker container to the current directory in order to access the restaurants.json file
 
   mongo_express:
     image: mongo-express
@@ -521,49 +521,47 @@ services:
       - mongodb
 ```
 
-The you can lunch the docker containers:
+Then, you can lunch the docker containers:
 
 ```sh
 docker compose up -d
 ```
 
-Once your container is running, you can run the dollowing:
+Once your container is running, you can run the following:
 
 ```sh
 docker exec -it mongodb-mongodb-1 mongoimport --db='restaurants_reviews' --collection='restaurants' --file='/tutorial/restaurants.json'
 ```
 
-This will load the file resutant files. On the web UI you will find the database named `restaurants_reviews` and a collection called `restaurants`. 
-
-
+This will load the restaurants file. On the web UI, you will find the database named `restaurants_reviews` and a collection called `restaurants`. 
 
 Let's explore the data with Python and `pymongo` library.
-First you need to install `pymongo`.
+First, you need to install `pymongo`.
 
 ```sh
 pip install pymongo
 ```
 
-Then run the code
+Then, run the code
 ```sh
 python tutorial.py
 ```
 
-## Trobleshooting
+## Troubleshooting
 ### Checking the logs
-To check the logs of a container an see what is happending or the errors use:
+To check the logs of a container and see what is happening or the errors use:
 ```sh
 docker compose logs <container-name>
 ```
 
 ### Default docker IP address
-In windows you can check the address of your docker engine by opening Docker Desktop and going to settings. There go to Resources > Network
+In the Docker Desktop, you can check the address of your docker engine by opening Docker Desktop and going to settings. There go to Resources > Network
 
 ### Online alternatives to practice with MongoDB
 - https://www.mongodb.com/docs/manual/tutorial/getting-started/
 - https://onecompiler.com/mongodb
 
 ## Addition resources
-This resources can help you to expand your knowledge of MongoDB:
+These resources can help you to expand your knowledge of MongoDB:
 - https://www.tutorialspoint.com/mongodb/index.htm
 - https://www.mongodb.com/docs/manual/

@@ -2,7 +2,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # The docker network to connect the different containers
 
 services:
   mongodb:
@@ -10,7 +10,7 @@ services:
     networks:
       - tutorial
     ports:
-      - "27017:27017"
+      - "27017:27017" # The port to access MongoDB
 
   mongo_express:
     image: mongo-express
@@ -20,7 +20,7 @@ services:
       - target: 8081
         published: 8081
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
-    command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express"
+      ME_CONFIG_MONGODB_SERVER: mongodb # The address of the mongodb server. Docker enginer will resolve the name to the IP address.
+    command: /bin/bash -c "sleep 60 && /docker-entrypoint.sh mongo-express" # We wait 60 seconds to start as the MongoDB needs time to start
     depends_on:
       - mongodb
