@@ -130,7 +130,7 @@ services:
       - mongodb
 ```
 
-Now you can open the browser and see your Cassandra instance (this can take around 5 minutes to connect with MongoDB).
+Now you can open the browser and see your MongoDB instance (this can take around 5 minutes to connect with MongoDB).
 
 >http://localhost:8081
 

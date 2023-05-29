@@ -34,7 +34,7 @@ res = collection.aggregate(pipeline)
 
 print(list(res))
 
-print("Find a restaurant that does not do American cousine in Brooklyn")
+print("Find a restaurant that does not do American cousine not in Brooklyn")
 res = collection.find_one({"cuisine" : {"$ne" : "American"}, "borough": {"$ne" : "Brooklyn"}},{"_id": 0,"name":1}                    )
 
 print(res)
