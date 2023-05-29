@@ -169,28 +169,33 @@ classDiagram
 ``` 
 To create an instance of the class, you can use:
 
-```mongo
+```sh
 db.shopping_cart.insertOne({ userid: "9876", item_count: 2, last_update_timestamp: Date() })
 ```
-To add some transactions, you can use the following sentences:
+To add some documents, you can use the following sentences:
 
-```mongo
+```sh
 db.shopping_cart.insertOne({ userid: "2356", item_count: 10, last_update_timestamp: Date() })
 db.shopping_cart.insertOne({ userid: "1234", item_count: 5, last_update_timestamp: Date() })
+```
+
+To add many documents you can do, where instead of a single document, you can specify a list of documents:
+```sh
+db.shopping_cart.insertMany([{ userid: "6655", item_count: 16, last_update_timestamp: Date() }, { userid: "hd54", item_count: 58, last_update_timestamp: Date() }])
 ```
 
 You can also do it one the web UI by using the option create document:
 On the web UI, you can also visualise the rows.
 ![Web Execute](web_execute.png "Web Execute")
 
-You can visualise these document by executing:
-```mongo
+To visualise the created documents, you can execute:
+```sh
 db.shopping_cart.find({})
 ```
 
 This should return:
 
-```mongo
+```sh
 [
   {
     _id: ObjectId("646bba98484d45a46f18254a"),
@@ -211,8 +216,49 @@ On the web UI, you can also visualise the rows.
 ![Web Rows](web_rows.png "Web Rows")
 
 
-## (Optional) Step 6: Create a cluster
+### Different keys on the same collection
+
+As the schema of mongo collections is flecible, documents can also be created with new keys. In this case you create a new document with the key 'name'. Note that the key _id is not new as it is always created by MongoDB to index the documents, even when you do not especify it:
+
+```sh
+db.shopping_cart.insterOne({ _id: ObjectId("6474f575644"), userid: "6655", item_count: 16, last_update_timestamp: Date(), name: "Max" })
+```
+
+What would happend if you try to retrive a document that does not have a key?
+
+First, you can create a new document:
+```sh
+db.shopping_cart.insterOne({ _id: ObjectId("90ds6bsdb9fdd7"), userid: "6655", item_count: 16, last_update_timestamp: Date() })
+```
+
+The you can try to retrive it:
+```sh
+db.shopping_cart.find({ _id : ObjectId("90ds6bsdb9fdd7")},{_id:0,name:1})
+```
+
+It will return a list with an empty document: `[ {} ]`
+
+Something similar would happend if you retrieve all documents and project only the key 'name'.
+
+```sh
+db.shopping_cart.find({},{_id:0,name:1})
+```
+
+This will return a list of documents with empty documents and some with the key 'name',  something like `[ {}, { name: 'Max' }, {}, {} ]`
+
+>In both case, you must be careful, as this can propagate errors. For example, in Python, if the returned document is handled as an empty dictionary, you will get an error if you try to access the key 'name' or any other key that does not exist in the empty document.
+
+To find the keys of your collection, you can do:
+
+```sh
+db.shopping_cart.aggregate([ {"$project":{"arrayofkeyvalue":{"$objectToArray":"$$ROOT"}}}, {"$unwind":"$arrayofkeyvalue"}, {"$group":{"_id":null,"allkeys":{"$addToSet":"$arrayofkeyvalue.k"}}} ])
+```
+
+
+## (Optional) Step 6: Create a cluster of replicas
 **Creating a cluster of two or more nodes requires a lot of resources, it may not run on your computer.**
+
+MongoDB has two replication modalities: mirrors of replicas and sharding. Now we are going to setup a cluster of mirrors of replicas, where each replica has the same data as the others (like a mirror).
 
 For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo):
 
@@ -329,6 +375,111 @@ members: [
   ok: 1
 ...
 ```
+
+## Step 8: Setup a distributed cluster
+Instead of setting up replicas that are mirrors, we can distribute the data across nodes. For this, we need a more complex setup: at least one instance as router, one as configuration, and two or more nodes to store data. The different type of instances can be horisontaly scaled too.
+
+![Sharded Cluster from https://www.mongodb.com/docs/manual/sharding/](sharded-cluster-architecture.svg "Sharded Cluster from https://www.mongodb.com/docs/manual/sharding/")
+
+Data is stored in shards and the shards are distributed according to some keys in each collection. The election of the keys for sharding is important as this can effect the perfomance but also determine how balanced will be the distribution.
+
+
+To setup the shared claster, you can use the following docker-compose or do `cp docker-compose-sharded.yml docker-compose.yml` (if you have cloned the git repo) or find it here [docker-compose-sharded.yml](docker-compose-sharded.yml):
+
+```yml
+version: '3'
+
+networks:
+  tutorial:
+    name: tutorial
+
+services:
+  mongodb1: # mongoDB data store 1. The data is stored in MongoDB1 and MongoDB1
+    image: mongo:4.2.24-bionic
+    networks:
+      - tutorial
+    ports:
+      - target: 27017
+        published: 27017
+    command: mongod --shardsvr --replSet clustershard --port 27017
+
+  mongodb2: # mongoDB data store 2
+    image: mongo:4.2.24-bionic
+    networks:
+      - tutorial
+    ports:
+      - target: 27017
+        published: 27018
+    command: mongod --shardsvr --replSet clustershard --port 27017
+    depends_on:
+      - mongodb1
+
+  mongocf: # Mongo config. It manages the configuration and metadata of the sharding. It can be also set up as a cluster.
+    image: mongo:4.2.24-bionic
+    networks:
+      - tutorial
+    ports:
+      - target: 27017
+        published: 27019
+    command: mongod --configsvr --replSet clustercf --port 27017
+    depends_on:
+      - mongodb1
+      - mongodb2
+
+  mongos: # Mongos acts as a router and also manages the sharding
+    image: mongo:4.2.24-bionic
+    networks:
+      - tutorial
+    ports:
+      - target: 27017
+        published: 27021
+    command: mongos --configdb clustercf/mongocf:27017 --port 27017 --bind_ip_all
+    depends_on:
+      - mongocf
+```
+
+Once the cluster is up and running, you need to configure it.
+
+1. Configure the Config server. For this you will use the mongosh:
+
+```sh
+docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongocf:27017
+```
+Inside the mongosh, you need to initialisate the cluster of Config Servers. In this case with only one instance:
+
+```sh
+rs.initiate({_id: "clustercf",configsvr: true, members: [{ _id : 0, host : "mongocf:27017" }]})
+```
+Exit the shell with `exit`.
+
+2. Initiate the cluster of MongoDB instances:
+
+```sh
+docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongodb1:27017
+```
+```sh
+rs.initiate({_id : "clustershard", members: [{ _id : 0, host : "mongodb1:27017" },{ _id : 1, host : "mongodb2:27017" }]})
+```
+Exit the shell with `exit`.
+
+3. Add the MongoDB cluster information to the routers:
+```sh
+docker run --network tutorial --rm -it rtsp/mongosh mongosh -- mongodb://mongos:27017
+```
+```sh
+sh.addShard("clustershard/mongodb1")
+sh.status()
+```
+4. Without leaving the shell, you can now create a shared database and collection. 
+
+```sh
+sh.enableSharding("testDB")
+sh.shardCollection("testDB.testCollection", {"shardingKey" : "hashed"})
+sh.status()
+```
+Exit the shell with `exit`.
+
+Any new database and collection needs to be created as shared if you want to distributed it.
 
 ## Step 7: Playground
 ### Load a dataset into MongoDB
