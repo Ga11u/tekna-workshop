@@ -255,10 +255,13 @@ db.shopping_cart.aggregate([ {"$project":{"arrayofkeyvalue":{"$objectToArray":"$
 ```
 
 
-## (Optional) Step 6: Create a cluster of replicas
+## (Optional) Step 6: Create a cluster
 **Creating a cluster of two or more nodes requires a lot of resources, it may not run on your computer.**
 
-MongoDB has two replication modalities: mirrors of replicas and sharding. Now we are going to setup a cluster of mirrors of replicas, where each replica has the same data as the others (like a mirror).
+MongoDB has two replication modalities: mirrors of replicas and sharding. 
+
+### Cluster of mirror replicas
+Now we are going to setup a cluster of mirrors of replicas, where each replica has the same data as the others (like a mirror).
 
 For this you can use the following docker-compose or do `cp docker-compose-cluster.yml docker-compose.yml` (if you have cloned the git repo):
 
@@ -376,7 +379,7 @@ members: [
 ...
 ```
 
-## Step 8: Setup a distributed cluster
+### Distributed shared cluster
 Instead of setting up replicas that are mirrors, we can distribute the data across nodes. For this, we need a more complex setup: at least one instance as router, one as configuration, and two or more nodes to store data. The different type of instances can be horisontaly scaled too.
 
 ![Sharded Cluster from https://www.mongodb.com/docs/manual/sharding/](sharded-cluster-architecture.svg "Sharded Cluster from https://www.mongodb.com/docs/manual/sharding/")
