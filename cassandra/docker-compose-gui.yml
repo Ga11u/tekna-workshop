@@ -2,7 +2,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # Create a network to connect the containers
 
 services:
   cassandra:
@@ -10,11 +10,11 @@ services:
     networks:
         - tutorial
     ports:
-      - "9042:9042"
+      - "9042:9042" # The port for connecting to cassandra
     environment:
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_BROADCAST_ADDRESS: cassandra
-      CASSANDRA_LISTEN_ADDRESS: cassandra
+      CASSANDRA_PASSWORD: cassandra # Password for connecting to Cassandra
+      CASSANDRA_BROADCAST_ADDRESS: cassandra  
+      CASSANDRA_LISTEN_ADDRESS: cassandra # The address cassandra listens for connections. Docker engine will resolve the name 'cassandra' to the IP address of the container
       LOCAL_JMX: "no"
 
   cassandra_web:
@@ -25,9 +25,9 @@ services:
       - target: 3000
         published: 8000
     environment:
-      CASSANDRA_HOST: cassandra
-      CASSANDRA_USER: cassandra
-      CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_HOST: cassandra # The address of the Cassandra instance
+      CASSANDRA_USER: cassandra # The user for connecting to Cassandra
+      CASSANDRA_PASSWORD: cassandra # The password for connecting to Cassandra
     depends_on:
       - cassandra
-    restart: unless-stopped
+    restart: unless-stopped # Cassandra needs to be up and running to connect. This will force the container to restart until it connects.

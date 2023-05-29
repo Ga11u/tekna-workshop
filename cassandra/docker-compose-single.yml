@@ -2,7 +2,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # The docker network to connect containers together
 
 services:
   cassandra:
@@ -10,4 +10,4 @@ services:
     networks:
       - tutorial
     ports:
-      - "9042:9042"
+      - "9042:9042" # The port for client connections

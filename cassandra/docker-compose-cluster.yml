@@ -2,7 +2,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # Create a network to connect the containers
 
 services:
   cassandra1:
@@ -12,9 +12,9 @@ services:
     ports:
       - "9042:9042"
     environment:
-      CASSANDRA_CLUSTER_NAME: cassandra-cluster
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_PASSWORD_SEEDER: "yes"
+      CASSANDRA_CLUSTER_NAME: cassandra-cluster # The name of the cluster we are setting up.
+      CASSANDRA_PASSWORD: cassandra 
+      CASSANDRA_PASSWORD_SEEDER: "yes" # Indicates this will be the first node where the additional nodes will connect.
       LOCAL_JMX: "no"
   
   cassandra2:
@@ -23,11 +23,11 @@ services:
         - tutorial
     ports:
       - target: 9042
-        published: 9043
+        published: 9043 # Set different ports for each node
     environment:
       CASSANDRA_CLUSTER_NAME: cassandra-cluster
       CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_SEEDS: cassandra1 
+      CASSANDRA_SEEDS: cassandra1  # The address of the first node of the cluster.
       LOCAL_JMX: "no"
     depends_on:
       - cassandra1

@@ -347,7 +347,7 @@ curl -X DELETE \
      http://localhost:8082/consumers/cg1/instances/ci1 
 ```
 
-## Trobleshooting
+## Troubleshooting
 ### Checking the logs
 To check the logs of a container and see what is happening or the errors use:
 ```sh

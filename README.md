@@ -4,11 +4,11 @@
 
 This project includes the slides and materials of the Tekna Workshop on Big Data Technologies and Architectures: A Hands-On Introduction held on from the 25th to the 26th of June 2023 in Oslo, Norway.
 
-- [(first_day)Big_Data_Introduction-Apache_Kafka.pdf]((first_day)Big_Data_Introduction-Apache_Kafka.pdf): includes the slides of the first day. It introduces the concept of Big Data, some Big Data technolgies and Kafka.
-- [(second_day)MongoDB-Apache_Cassandra-Big_Data_architectures.pdf]((first_day)Big_Data_Introduction-Apache_Kafka.pdf): includes the slides of the second day. It introduces MongoDB, Apache Cassandra and the Big Data architectures.
+- [Big_Data_Introduction-Apache_Kafka.pdf](Big_Data_Introduction-Apache_Kafka.pdf): includes the slides of the first day. It introduces the concept of Big Data, some Big Data technolgies and Kafka.
+- [Big_Data_DBs-Apache_Cassandra-MongoDB-Big_Data_architectures.pdf](Big_Data_DBs-Apache_Cassandra-MongoDB-Big_Data_architectures.pdf): includes the slides of the second day. It introduces Apache Cassandra, MongoDB and the Big Data architectures.
 - [kafka](kafka): includes the materials for the Apache Kafka hands-on
-- [mongodb](mongodb): includes the metarials for the MongoDB hands-on
 - [cassandra](cassandra): includes the materials for the Apache Cassandra hands-on
+- [mongodb](mongodb): includes the metarials for the MongoDB hands-on
 
 
 ---

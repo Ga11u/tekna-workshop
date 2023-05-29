@@ -23,7 +23,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # The docker network to connect containers together
 
 services:
   cassandra:
@@ -31,7 +31,7 @@ services:
     networks:
       - tutorial
     ports:
-      - "9042:9042"
+      - "9042:9042" # The port for client connections
 ```
 Save the file and close the editor.
 
@@ -77,7 +77,7 @@ Let's check if we can connect by opening an interactive query shell (you may nee
 docker run --rm -it --network tutorial nuvo/docker-cqlsh cqlsh cassandra 9042 --cqlversion='3.4.6' 
 ```
 
-If the connection succed, it will show:
+If the connection succeeds, it will show:
 
 ```
 Connected to Test Cluster at cassandra:9042.
@@ -103,7 +103,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # Create a network to connect the containers
 
 services:
   cassandra:
@@ -111,11 +111,11 @@ services:
     networks:
         - tutorial
     ports:
-      - "9042:9042"
+      - "9042:9042" # The port for connecting to cassandra
     environment:
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_BROADCAST_ADDRESS: cassandra
-      CASSANDRA_LISTEN_ADDRESS: cassandra
+      CASSANDRA_PASSWORD: cassandra # Password for connecting to Cassandra
+      CASSANDRA_BROADCAST_ADDRESS: cassandra  
+      CASSANDRA_LISTEN_ADDRESS: cassandra # The address cassandra listens for connections. Docker engine will resolve the name 'cassandra' to the IP address of the container
       LOCAL_JMX: "no"
 
   cassandra_web:
@@ -126,12 +126,12 @@ services:
       - target: 3000
         published: 8000
     environment:
-      CASSANDRA_HOST: cassandra
-      CASSANDRA_USER: cassandra
-      CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_HOST: cassandra # The address of the Cassandra instance
+      CASSANDRA_USER: cassandra # The user for connecting to Cassandra
+      CASSANDRA_PASSWORD: cassandra # The password for connecting to Cassandra
     depends_on:
       - cassandra
-    restart: unless-stopped
+    restart: unless-stopped # Cassandra needs to be up and running to connect. This will force the container to restart until it connects.
 ```
 
 Now you can open the browser and see your Cassandra instance (this can take around 5 minutes to connect with Cassandra).
@@ -157,7 +157,7 @@ From the command line. First we need to run the CQL shell:
 docker run --rm -it --network tutorial nuvo/docker-cqlsh cqlsh cassandra 9042 --cqlversion='3.4.6'
 ```
 
-Cassandra uses keyspaces to organise the data store. Similar to namespaces in other databases. By executing the folling sentence, you can create a keyspace named `store`. This keystore has replication factor 1, meaning that there will be a single copy of the data in our database. Higher replication factor will create more copies of the data, this is particularly interesting for replicating data in a cluster.
+Cassandra uses keyspaces to organise the data store. Similar to namespaces in other databases. By executing the following sentence, you can create a keyspace named `store`. This keystore has replication factor 1, meaning that there will be a single copy of the data in our database. A higher replication factor will create more copies of the data, this is particularly interesting for replicating data in a cluster.
 
 ```cql
 CREATE KEYSPACE IF NOT EXISTS store WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : '1' };
@@ -218,7 +218,7 @@ version: '3'
 
 networks:
   tutorial:
-    name: tutorial
+    name: tutorial # Create a network to connect the containers
 
 services:
   cassandra1:
@@ -228,9 +228,9 @@ services:
     ports:
       - "9042:9042"
     environment:
-      CASSANDRA_CLUSTER_NAME: cassandra-cluster
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_PASSWORD_SEEDER: "yes"
+      CASSANDRA_CLUSTER_NAME: cassandra-cluster # The name of the cluster we are setting up.
+      CASSANDRA_PASSWORD: cassandra 
+      CASSANDRA_PASSWORD_SEEDER: "yes" # Indicates this will be the first node where the additional nodes will connect.
       LOCAL_JMX: "no"
   
   cassandra2:
@@ -239,11 +239,11 @@ services:
         - tutorial
     ports:
       - target: 9042
-        published: 9043
+        published: 9043 # Set different ports for each node
     environment:
       CASSANDRA_CLUSTER_NAME: cassandra-cluster
       CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_SEEDS: cassandra1 
+      CASSANDRA_SEEDS: cassandra1  # The address of the first node of the cluster.
       LOCAL_JMX: "no"
     depends_on:
       - cassandra1
@@ -275,7 +275,7 @@ You should now see:
 ![Cassandra Web two instances](cassandra_web_two_instance.png "Cassandra Web two instances")
 
 ## Step 8: Playground
-We are going to start by install the Python library `cassandra-driver`.
+We are going to start by installing the Python library `cassandra-driver`.
 ```sh
 pip install cassandra-driver
 ```
@@ -290,21 +290,21 @@ python tutorial.py
 
 
 
-## Trobleshooting
+## Troubleshooting
 ### Checking the logs
-To check the logs of a container an see what is happending or the errors use:
+To check the logs of a container and see what is happening or the errors use:
 ```sh
 docker compose logs <container-name>
 ```
 
 ### Default docker IP address
-In windows you can check the address of your docker engine by opening Docker Desktop and going to settings. There go to Resources > Network
+On the Docker Desktop, you can check the address of your docker engine by opening Docker Desktop and going to settings. There go to Resources > Network
 
 ### Online alternatives to practice with Cassandra
 - https://onecompiler.com/cassandra
 
 ## Addition resources
-This resources can help you to expand your knowledge of Cassandra:
+These resources can help you to expand your knowledge of Cassandra:
 - https://www.tutorialspoint.com/cassandra/index.htm
 - https://cassandra.apache.org/doc/latest/
 
